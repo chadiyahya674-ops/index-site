@@ -1303,14 +1303,15 @@ function init(){
     renderLogin();
   }
 }
+
 init();
 
-<!-- 1. استدعاء مكتبات الفايربيس السحابية -->
+</script>
+
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <script>
-  // 2. إعدادات مشروعك في Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyAMvFy9M0sZ53mPOwYjnG07g8pVSJ1Bb-c",
     authDomain: "my-store-3e22f.firebaseapp.com",
@@ -1324,25 +1325,22 @@ init();
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
 
-  // 3. الاستماع للتغييرات في السحاب وتحديث البيانات فوراً
   database.ref('store_data').on('value', (snapshot) => {
     const cloudData = snapshot.val();
     if (cloudData) {
-      DATA = cloudData; // تحديث بيانات السيستم بالبيانات القادمة من السحاب
+      DATA = cloudData;
       if (typeof renderShell === "function" && typeof SESSION !== "undefined" && SESSION) {
-        renderShell(); // إعادة رسم الشاشة بالبيانات الجديدة
+        renderShell();
       }
     }
   });
 
-  // 4. دالة مخصصة لحفظ أي تغيير فوراً إلى Firebase
   function syncToCloud() {
     if (typeof DATA !== "undefined") {
       database.ref('store_data').set(DATA);
     }
   }
 
-  // حفظ تلقائي للسحاب كلما تغيرت البيانات المحلية
   const originalSaveData = window.saveData;
   window.saveData = function() {
     if (originalSaveData) originalSaveData();
