@@ -1322,22 +1322,26 @@ init();
     appId: "1:372080851762:web:1c6179c04e39dc1ce4352b"
   };
 
-  firebase.initializeApp(firebaseConfig);
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
   const database = firebase.database();
 
+  // الاستماع للتغييرات بدون تخريب الجلسة أو الصفحة الرئيسية
   database.ref('store_data').on('value', (snapshot) => {
     const cloudData = snapshot.val();
-    if (cloudData) {
-      DATA = cloudData;
-      if (typeof renderShell === "function" && typeof SESSION !== "undefined" && SESSION) {
-        renderShell();
+    if (cloudData && Object.keys(cloudData).length > 0) {
+      window.DATA = cloudData;
+      if (typeof window.renderShell === "function" && window.SESSION) {
+        window.renderShell();
       }
     }
   });
 
+  // حفظ التغييرات فوراً إلى السحاب عند الشراء أو الفواتير
   function syncToCloud() {
-    if (typeof DATA !== "undefined") {
-      database.ref('store_data').set(DATA);
+    if (window.DATA && database) {
+      database.ref('store_data').set(window.DATA);
     }
   }
 
