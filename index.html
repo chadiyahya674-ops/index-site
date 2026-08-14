@@ -1312,49 +1312,47 @@ init();
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAMvFy9M0sZ53mPOwYjnG07g8pVSJ1Bb-c",
-    authDomain: "my-store-3e22f.firebaseapp.com",
-    databaseURL: "https://my-store-3e22f-default-rtdb.firebaseio.com",
-    projectId: "my-store-3e22f",
-    storageBucket: "my-store-3e22f.firebasestorage.app",
-    messagingSenderId: "372080851762",
-    appId: "1:372080851762:web:1c6179c04e39dc1ce4352b"
-  };
+  (function() {
+    const firebaseConfig = {
+      apiKey: "AIzaSyAMvFy9M0sZ53mPOwYjnG07g8pVSJ1Bb-c",
+      authDomain: "my-store-3e22f.firebaseapp.com",
+      databaseURL: "https://my-store-3e22f-default-rtdb.firebaseio.com",
+      projectId: "my-store-3e22f",
+      storageBucket: "my-store-3e22f.firebasestorage.app",
+      messagingSenderId: "372080851762",
+      appId: "1:372080851762:web:1c6179c04e39dc1ce4352b"
+    };
 
-  if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
-  const database = firebase.database();
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    
+    const db = firebase.database();
 
-  // 1. الاستماع للتغييرات
-  database.ref('store_data').on('value', (snapshot) => {
-    const cloudData = snapshot.val();
-    if (cloudData && Object.keys(cloudData).length > 0) {
-      window.DATA = cloudData;
-      if (typeof window.renderShell === "function" && window.SESSION) {
-        window.renderShell();
+    // جلب البيانات فوراً عند فتح الصفحة وتحديث الشاشة
+    db.ref('store_data').on('value', (snapshot) => {
+      const cloudData = snapshot.val();
+      if (cloudData) {
+        window.DATA = cloudData;
+        if (typeof window.saveData === 'function') {
+          // حفظها في الذاكرة المحلية كي يراها النظام فوراً
+          localStorage.setItem('STORE_DATA', JSON.stringify(cloudData));
+        }
+        if (typeof window.renderShell === 'function' && window.SESSION) {
+          window.renderShell();
+        }
       }
-    } else {
-      // إذا كان السحاب فارغاً، ارفع البيانات المحلية الموجودة حالياً فوراً للسحاب!
+    });
+
+    // رفع البيانات إلى Firebase عند حدوث أي عملية حفظ/بيع
+    const oldSave = window.saveData;
+    window.saveData = function() {
+      if (oldSave) oldSave();
       if (window.DATA) {
-        database.ref('store_data').set(window.DATA);
+        db.ref('store_data').set(window.DATA);
       }
-    }
-  });
-
-  // 2. دالة الحفظ السحابي عند إجراء أي عملية بيع
-  function syncToCloud() {
-    if (window.DATA && database) {
-      database.ref('store_data').set(window.DATA);
-    }
-  }
-
-  const originalSaveData = window.saveData;
-  window.saveData = function() {
-    if (originalSaveData) originalSaveData();
-    syncToCloud();
-  };
+    };
+  })();
 </script>
 </body>
 </html>
