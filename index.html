@@ -1327,7 +1327,7 @@ init();
   }
   const database = firebase.database();
 
-  // الاستماع للتغييرات بدون تخريب الجلسة أو الصفحة الرئيسية
+  // 1. الاستماع للتغييرات
   database.ref('store_data').on('value', (snapshot) => {
     const cloudData = snapshot.val();
     if (cloudData && Object.keys(cloudData).length > 0) {
@@ -1335,10 +1335,15 @@ init();
       if (typeof window.renderShell === "function" && window.SESSION) {
         window.renderShell();
       }
+    } else {
+      // إذا كان السحاب فارغاً، ارفع البيانات المحلية الموجودة حالياً فوراً للسحاب!
+      if (window.DATA) {
+        database.ref('store_data').set(window.DATA);
+      }
     }
   });
 
-  // حفظ التغييرات فوراً إلى السحاب عند الشراء أو الفواتير
+  // 2. دالة الحفظ السحابي عند إجراء أي عملية بيع
   function syncToCloud() {
     if (window.DATA && database) {
       database.ref('store_data').set(window.DATA);
